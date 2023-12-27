@@ -1,4 +1,4 @@
-package io.github.greennlab.hwptemplate;
+package net.timbel.hwptemplate;
 
 import kr.dogfoot.hwplib.object.bodytext.paragraph.Paragraph;
 import kr.dogfoot.hwplib.object.bodytext.paragraph.charshape.CharPositionShapeIdPair;
@@ -15,16 +15,13 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static io.github.greennlab.hwptemplate.HwpTemplate.INTERPOLATION_CHARS_SIZE;
-import static io.github.greennlab.hwptemplate.HwpTemplate.INTERPOLATION_CLOSE_CHAR;
-import static io.github.greennlab.hwptemplate.HwpTemplate.INTERPOLATION_START_CHAR;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.joining;
 
+@Getter
 @Slf4j
 public class HwpTemplateParagraph {
 
-    @Getter
     private final List<Interpolation> interpolations;
     private final Paragraph originParagraph;
 
@@ -34,8 +31,8 @@ public class HwpTemplateParagraph {
         this.interpolations = Interpolation.builder(originParagraph);
     }
 
-    public Paragraph interpolate(HwpTemplateData segment) {
-        val paragraph = originParagraph.clone();
+    protected <T> Paragraph interpolate(HwpTemplateData<T> data) {
+        var paragraph = originParagraph.clone();
         if (paragraph.getText() == null) return paragraph;
 
         val text = paragraph.getText();
@@ -43,35 +40,26 @@ public class HwpTemplateParagraph {
             lineSegItem.setSegmentWidth(lineSegItem.getSegmentWidth() + 1);
         }
 
-        int index = 0;
+        int position = 0;
         for (final Interpolation interpolation : interpolations) {
-            index += interpolation.getIndex();
+            position += interpolation.getPosition();
 
             try {
-                val itemValue = interpolatedValue(segment, interpolation.getItem());
-                val removeRange = interpolation.getItem().length() + INTERPOLATION_CHARS_SIZE; // 4 is interpolation characters "{{}}"
-                text.getCharList().subList(index, index + removeRange).clear();
-                text.insertString(index, itemValue);
+                val name = interpolation.getName();
+                val value = data.value(name);
+                val replaceRange = name.length() + HwpTemplate.INTERPOLATION_CHARS_SIZE;
+                text.getCharList().subList(position, position + replaceRange).clear();
+                text.insertString(position, value);
 
-                val gap = itemValue.length() - removeRange;
-                resetCharShape(paragraph.getCharShape().getPositonShapeIdPairList(), index, gap);
-                index += gap;
+                val gap = value.length() - replaceRange;
+                resetCharShape(paragraph.getCharShape().getPositonShapeIdPairList(), position, gap);
+                position += gap;
             } catch (UnsupportedEncodingException e) {
                 throw new IllegalStateException(e);
             }
         }
 
         return paragraph;
-    }
-
-    public String interpolatedValue(HwpTemplateData<T> segment, String item) {
-        try {
-            val field = segment.getData().getClass().getField(item);
-            val value = field.get(segment);
-            return value == null ? "" : value.toString();
-        } catch (IllegalAccessException | IllegalStateException | NoSuchFieldException e) {
-            return "";
-        }
     }
 
     @SuppressWarnings("java:S127")
@@ -101,9 +89,9 @@ public class HwpTemplateParagraph {
             for (int i = 0, l = hwpChars.size(); i < l - 1; i++) {
                 final int code = hwpChars.get(i).getCode();
                 final int nextCode = hwpChars.get(i + 1).getCode();
-                if (INTERPOLATION_START_CHAR == code && INTERPOLATION_START_CHAR == nextCode) {
+                if (HwpTemplate.INTERPOLATION_START_CHAR == code && HwpTemplate.INTERPOLATION_START_CHAR == nextCode) {
                     start = i + 2;
-                } else if (start > -1 && INTERPOLATION_CLOSE_CHAR == code && INTERPOLATION_CLOSE_CHAR == nextCode) {
+                } else if (start > -1 && HwpTemplate.INTERPOLATION_CLOSE_CHAR == code && HwpTemplate.INTERPOLATION_CLOSE_CHAR == nextCode) {
                     final String name = hwpChars.subList(start, i - 1).stream().map(hwpChar -> {
                         try {
                             return new HWPCharNormal(hwpChar.getCode()).getCh();
@@ -120,22 +108,5 @@ public class HwpTemplateParagraph {
             return result;
         }
     }
-
-//    public long getItemTextShapeId() {
-//        int index = 0;
-//        for (Interpolation interpolation : interpolations) {
-//            index += interpolation.getIndex();
-//
-//            if (HwpTemplate.HwpTemplateItem.text == interpolation.getItem()) {
-//                for (CharPositionShapeIdPair pair : originParagraph.getCharShape().getPositonShapeIdPairList()) {
-//                    if (index <= pair.getPosition())
-//                        return pair.getShapeId();
-//                }
-//
-//            }
-//        }
-//
-//        return -1;
-//    }
 
 }

@@ -1,15 +1,16 @@
-package io.github.greennlab.hwptemplate;
+package net.timbel.hwptemplate;
 
+import lombok.Builder;
 import lombok.Data;
 
 @Data
-@SuppressWarnings("ALL")
+@Builder
 public class Sampling {
-    private String 순번;
-    private String 이름;
-    private String 내용;
-    private double 시작시간;
-    private double 종료시간;
+    private String index;
+    private String name;
+    private String text;
+    private double begin;
+    private double close;
 
 
     static String timeFormatWithMillis(double seconds) {
