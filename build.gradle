@@ -1,9 +1,12 @@
 plugins {
     id 'java'
+    id 'maven-publish'
+    id 'signing'
 }
 
-group = 'io.github.greenn-lab'
-version = '0.9'
+group = 'net.timbel'
+version = '0.2'
+description = 'Generate HWP document by templates.'
 
 repositories {
     mavenCentral()
@@ -11,8 +14,11 @@ repositories {
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(11)
+        languageVersion = JavaLanguageVersion.of(8)
     }
+
+    withJavadocJar()
+    withSourcesJar()
 }
 
 dependencies {
@@ -30,4 +36,50 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+publishing {
+    publications {
+        release(MavenPublication) {
+            pom {
+                name = project.name
+                description = project.description
+                url = 'https://github.com/timbel-net/hwp-template'
+                licenses {
+                    license {
+                        name = 'Apache License 2.0'
+                        url = 'https://github.com/timbel-net/hwp-template/tree/main/LICENSE.txt'
+                    }
+                }
+                developers {
+                    developer {
+                        name = 'green'
+                        email = 'green@timbel.net'
+                    }
+                }
+                scm {
+                    url = 'https://github.com/timbel-net/hwp-template/tree/main'
+                }
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            name = "OSSRH"
+            url = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+            credentials {
+                username = System.getenv('OSSRH_UID')
+                password = System.getenv('OSSRH_PIN')
+            }
+        }
+    }
+}
+
+ext['signing.keyId'] = '95B9EA88'
+ext['signing.secretKeyRingFile'] = './signing-hwp-template.gpg'
+ext['signing.password'] = System.getenv('OSSRH_UID')
+
+signing {
+    sign publishing.publications
 }

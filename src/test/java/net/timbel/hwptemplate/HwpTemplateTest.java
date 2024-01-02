@@ -4,13 +4,13 @@ import kr.dogfoot.hwplib.reader.HWPReader;
 import lombok.val;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
+import java.util.Arrays;
 
 class HwpTemplateTest {
 
     @Test
     void shouldCreateHwpFile() throws Exception {
-        val given = List.of(
+        val given = Arrays.asList(
                 Sampling.builder().name("Kane").text("FW").begin(12.123).close(23.234).build(),
                 Sampling.builder().name("Davies").text("MF").begin(12.123).close(23.234).build()
         );

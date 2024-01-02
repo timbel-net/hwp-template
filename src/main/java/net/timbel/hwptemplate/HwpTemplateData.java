@@ -3,6 +3,7 @@ package net.timbel.hwptemplate;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.SneakyThrows;
+import lombok.var;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
