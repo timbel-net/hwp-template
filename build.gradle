@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'maven-publish'
     id 'signing'
+    id 'application'
 }
 
 group = 'net.timbel'
@@ -21,8 +22,30 @@ java {
     withSourcesJar()
 }
 
+application {
+    applicationName = 'hwp-template'
+    mainClass = 'net.timbel.hwptemplate.Runner'
+}
+
+jar {
+    archiveFileName = 'hwp-template.jar'
+
+    manifest {
+        attributes 'Main-Class': application.mainClass
+    }
+
+    from sourceSets.main.output
+
+    dependsOn configurations.runtimeClasspath
+
+    from {
+        configurations.runtimeClasspath.findAll { it.name.endsWith('jar') }.collect { zipTree(it) }
+    }
+}
+
 dependencies {
     implementation 'kr.dogfoot:hwplib:1.1.1'
+    implementation 'com.google.code.gson:gson:2.10.1'
 
     compileOnly 'org.projectlombok:lombok:1.18.24'
     annotationProcessor 'org.projectlombok:lombok:1.18.24'

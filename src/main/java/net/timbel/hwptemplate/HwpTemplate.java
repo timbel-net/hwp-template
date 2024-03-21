@@ -16,7 +16,7 @@ import java.util.function.Function;
 
 @Getter
 @Log
-public class HwpTemplate<T> {
+public class HwpTemplate {
 
     public static final String FORM_BEGIN = System.getProperty("hwp.template.begin", "<꼬락서니>");
     public static final String FORM_CLOSE = System.getProperty("hwp.template.close", "</꼬락서니>");
@@ -87,7 +87,7 @@ public class HwpTemplate<T> {
         }
     }
 
-    public void write(List<T> data, Function<HwpTemplateData, Function<Paragraph, Paragraph>> decorator) {
+    public void write(List<?> data, Function<HwpTemplateData, Function<Paragraph, Paragraph>> decorator) {
         final AtomicInteger line = new AtomicInteger(startLine);
         final AtomicInteger index = new AtomicInteger(-1);
 
@@ -106,7 +106,7 @@ public class HwpTemplate<T> {
         cleanUpLeftOverTemplates(line.intValue());
     }
 
-    public void write(List<T> data) {
+    public void write(List<?> data) {
         write(data, s -> p -> p);
     }
 

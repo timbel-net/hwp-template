@@ -19,7 +19,7 @@ class HwpTemplateTest {
         assert in != null;
 
         val hwp = HWPReader.fromInputStream(in);
-        val template = new HwpTemplate<Sampling>(hwp);
+        val template = new HwpTemplate(hwp);
 
         template.write(given);
 
