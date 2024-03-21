@@ -7,24 +7,25 @@ import lombok.SneakyThrows;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 @Data
 @EqualsAndHashCode(callSuper = false)
 @SuppressWarnings("SerializableHasSerializationMethods")
-public class HwpTemplateData<T> extends HashMap<Object, Object> {
+public class HwpTemplateData extends HashMap<Object, Object> {
 
     private int index;
 
-    private HwpTemplateData(T data) {
+    private <T> HwpTemplateData(T data) {
         this.putAll(toFlat(data));
     }
 
-    public static <T> HwpTemplateData<T> wrap(T data) {
-        return new HwpTemplateData<>(data);
+    public static <T> HwpTemplateData wrap(T data) {
+        return new HwpTemplateData(data);
     }
 
     @SneakyThrows
-    private Map<?, ?> toFlat(T object) {
+    private <T> Map<?, ?> toFlat(T object) {
         if (object instanceof Map) return (Map<?, ?>) object;
 
         var clazz = object.getClass();
@@ -45,7 +46,9 @@ public class HwpTemplateData<T> extends HashMap<Object, Object> {
     }
 
     public String value(Object key) {
-        return super.getOrDefault(key, "").toString();
+        if (Objects.equals(key, "index")) return String.valueOf(index);
+
+        return containsKey(key) ? super.getOrDefault(key, "").toString() : "";
     }
 
 }

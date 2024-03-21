@@ -5,7 +5,7 @@ import kr.dogfoot.hwplib.object.bodytext.Section;
 import kr.dogfoot.hwplib.object.bodytext.paragraph.Paragraph;
 import kr.dogfoot.hwplib.writer.HWPWriter;
 import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
+import lombok.extern.java.Log;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -15,14 +15,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 @Getter
-@Slf4j
+@Log
 public class HwpTemplate<T> {
 
-    public static final String FORM_BEGIN = System.getProperty("hwp.template.begin", "<폼>");
-    public static final String FORM_CLOSE = System.getProperty("hwp.template.close", "</폼>");
+    public static final String FORM_BEGIN = System.getProperty("hwp.template.begin", "<꼬락서니>");
+    public static final String FORM_CLOSE = System.getProperty("hwp.template.close", "</꼬락서니>");
     public static final int INTERPOLATION_START_CHAR = System.getProperty("hwp.interpolate.begin", "{").charAt(0);
     public static final int INTERPOLATION_CLOSE_CHAR = System.getProperty("hwp.interpolate.close", "}").charAt(0);
-    public static final int INTERPOLATION_CHARS_SIZE = 4;
+    public static final int INTERPOLATION_CHARS_SIZE = 2;
 
     private final HWPFile hwp;
     private final List<HwpTemplateParagraph> templateParagraphs = new ArrayList<>();
@@ -87,8 +87,8 @@ public class HwpTemplate<T> {
         }
     }
 
-    public void write(List<T> data, Function<HwpTemplateData<T>, Function<Paragraph, Paragraph>> decorator) {
-        final AtomicInteger line = new AtomicInteger(startLine - 1);
+    public void write(List<T> data, Function<HwpTemplateData, Function<Paragraph, Paragraph>> decorator) {
+        final AtomicInteger line = new AtomicInteger(startLine);
         final AtomicInteger index = new AtomicInteger(-1);
 
         data.stream().map(HwpTemplateData::wrap)
@@ -97,7 +97,7 @@ public class HwpTemplate<T> {
 
                     for (HwpTemplateParagraph templateParagraph : templateParagraphs) {
                         section.insertParagraph(
-                                line.incrementAndGet(),
+                                line.getAndIncrement(),
                                 decorator.apply(item).apply(templateParagraph.interpolate(item))
                         );
                     }
@@ -118,7 +118,7 @@ public class HwpTemplate<T> {
                 section.deleteParagraph(i);
             }
         } catch (IndexOutOfBoundsException e) {
-            log.warn("clean up left over templates. {}", e.getMessage());
+            log.warning("clean up left over templates: " + e.getMessage());
         }
     }
 
